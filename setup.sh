@@ -139,8 +139,27 @@ else
 fi
 
 # Resolve remaining params now that we're in the repo.
-[ -n "$FEATURE_BRANCH" ] || FEATURE_BRANCH="$(git branch --show-current)"
-[ -n "$FEATURE_BRANCH" ] || die "detached HEAD – pass --feature-branch."
+# Every feature branch shipped in the snapshot. A PARALLEL snapshot carries more than one
+# (e.g. feature-f2-… built + feature-f6-… designed); Step 3 creates a paired Lakebase + git branch
+# for EACH. The LAND branch (where .env/config/claim run and the script leaves you) is the one you
+# have checked out — `git checkout <feature-branch>` the one you want to work before running this,
+# exactly as the single-feature snapshots do — or pass --feature-branch.
+FEATURE_BRANCHES=()
+while IFS= read -r _fb; do [ -n "$_fb" ] && FEATURE_BRANCHES+=("$_fb"); done < <(
+  git for-each-ref --format='%(refname:short)' 'refs/heads/feature-*' 'refs/remotes/origin/feature-*' \
+    | sed 's#^origin/##' | sort -u)
+if [ -z "$FEATURE_BRANCH" ]; then
+  _cur="$(git branch --show-current)"
+  case "$_cur" in
+    feature-*) FEATURE_BRANCH="$_cur";;
+    *)
+      if [ "${#FEATURE_BRANCHES[@]}" -eq 1 ]; then FEATURE_BRANCH="${FEATURE_BRANCHES[0]}"
+      elif [ "${#FEATURE_BRANCHES[@]}" -eq 0 ]; then die "detached HEAD / no feature-* branch – pass --feature-branch."
+      else die "multiple feature branches (${FEATURE_BRANCHES[*]}) and HEAD is not on one – 'git checkout <branch>' the one to work (or pass --feature-branch <name>)."; fi;;
+  esac
+fi
+# The land branch is always part of the create/push set.
+printf '%s\n' "${FEATURE_BRANCHES[@]}" | grep -qxF "$FEATURE_BRANCH" || FEATURE_BRANCHES+=("$FEATURE_BRANCH")
 [ -n "$PARENT_DIR" ] || PARENT_DIR="$(dirname "$REPO_ROOT")"
 [ -n "$NEW_NAME" ] || die "project name is required: ./setup.sh <project-name> (or --project-name <name>)."
 [[ "$NEW_NAME" =~ ^[a-z][a-z0-9-]{0,62}$ ]] || die "invalid project name '$NEW_NAME' (lowercase, start with a letter, 1-63 chars)."
@@ -153,7 +172,7 @@ if [ -z "$TIERS" ]; then
   TIERS="$(./scripts/lk lakebase-scm-state 2>/dev/null | grep -oiE 'tier[_-]?topology[^0-9]*([0-9])' | grep -oE '[0-9]' | head -1 || true)"
   [ -n "$TIERS" ] || TIERS=2
 fi
-log "project-name=$NEW_NAME  feature-branch=$FEATURE_BRANCH  tiers=$TIERS  gh-owner=${GH_OWNER:-<none>}  parent=$PARENT_DIR"
+log "project-name=$NEW_NAME  land-branch=$FEATURE_BRANCH  feature-branches=[${FEATURE_BRANCHES[*]}]  tiers=$TIERS  gh-owner=${GH_OWNER:-<none>}  parent=$PARENT_DIR"
 confirm "Proceed with these settings?" || die "aborted."
 
 # ---------------------------------------------------------------------------- Step 2: create Lakebase project
@@ -180,7 +199,7 @@ case "$TIERS" in
   3) LB_BRANCHES+=("staging:production" "dev:staging"); LB_PARENT_OF_FEATURE="dev";;
   *) die "unsupported --tiers '$TIERS' (use 1, 2, or 3).";;
 esac
-LB_BRANCHES+=("$FEATURE_BRANCH:$LB_PARENT_OF_FEATURE")
+for _fb in "${FEATURE_BRANCHES[@]}"; do LB_BRANCHES+=("$_fb:$LB_PARENT_OF_FEATURE"); done
 
 branch_exists() { databricks postgres get-branch "projects/$NEW_NAME/branches/$1" -p "$PROFILE" >/dev/null 2>&1; }
 for pair in "${LB_BRANCHES[@]}"; do
@@ -218,7 +237,7 @@ step "Step 5 – Detach from the repo it was pulled from"
 # local branches; the others exist only as origin/* refs – which `git remote remove` below
 # deletes. Without this, Step 6 would push only the local branches and the new repo would be
 # missing staging (and/or main), leaving the feature branch with no parent there.
-for b in main staging "$FEATURE_BRANCH"; do
+for b in main staging "${FEATURE_BRANCHES[@]}"; do
   if ! git show-ref --verify --quiet "refs/heads/$b" && git show-ref --verify --quiet "refs/remotes/origin/$b"; then
     run git branch "$b" "origin/$b"
     log "materialized local branch '$b' from origin/$b (so Step 6 can push it)"
@@ -246,7 +265,7 @@ if [ "$DRY_RUN" = 1 ]; then
   log "[dry-run] per ancestry branch: git rm --cached \$(git ls-files --cached --ignored --exclude-standard)"
 else
   _ret_branch="$(git branch --show-current)"
-  for b in main staging "$FEATURE_BRANCH"; do
+  for b in main staging "${FEATURE_BRANCHES[@]}"; do
     git show-ref --verify --quiet "refs/heads/$b" || continue
     if ! git checkout -q "$b" 2>/dev/null; then warn "5b: could not checkout '$b' (dirty tree?); skipping"; continue; fi
     _eph="$(git ls-files --cached --ignored --exclude-standard)"
@@ -270,7 +289,7 @@ else
   # Branches to push = the feature's whole git ancestry (Step 6): main + staging + feature.
   # git trunk is `main`, NOT a git branch named `production`.
   PUSH_BRANCHES=()
-  for b in main staging "$FEATURE_BRANCH"; do
+  for b in main staging "${FEATURE_BRANCHES[@]}"; do
     git show-ref --verify --quiet "refs/heads/$b" && PUSH_BRANCHES+=("$b")
   done
   # de-dup (feature could equal main/staging in odd setups)
