@@ -1,0 +1,17 @@
+{
+  "id": "AC1-home-table-batch-serial-columns",
+  "status": "draft",
+  "given": "stock records at a location whose batch and serial are known (e.g. batch 'B7', serial 'S001')",
+  "when": "the operator opens the home stock-by-location table",
+  "then": "each row shows separate Batch and Serial columns holding that record's batch ('B7') and serial ('S001'), and the table no longer shows a single combined tracking-code column",
+  "layer": "E2E",
+  "architectural_notes": "E2E: client↔server contract — the React home stock table (client/ pages+components) renders batch_number/serial_number from GET /api/stock in separate Batch and Serial columns, dropping the combined tracking column. Boundary app/routes/stock.py serializes the nullable columns read via StockService -> app/repositories/stock.py -> app/models/stock_record.py; no client-side split of tracking_code. Verified by Playwright against the live API on the paired branch.",
+  "ui_seams": [
+    "stock-table",
+    "stock-col-batch",
+    "stock-col-serial",
+    "stock-batch-<sku>-<loc>",
+    "stock-serial-<sku>-<loc>"
+  ],
+  "api_contract_id": "EP1-list-stock-batch-serial"
+}

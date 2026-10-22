@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "feature_id": "F6-split-tracking-code",
+  "stories": {
+    "S1-expand-split-columns": {
+      "status": "ready",
+      "gate": {
+        "status": "approved",
+        "history": [
+          {
+            "action": "approved",
+            "at": "2026-10-22T06:13:02.909Z",
+            "approver": "Kevin Hartman"
+          }
+        ],
+        "approver": "Kevin Hartman",
+        "approved_at": "2026-10-22T06:13:02.909Z"
+      }
+    },
+    "S2-show-batch-serial": {
+      "status": "ready",
+      "gate": {
+        "status": "approved",
+        "history": [
+          {
+            "action": "approved",
+            "at": "2026-10-22T06:13:03.121Z",
+            "approver": "Kevin Hartman"
+          }
+        ],
+        "approver": "Kevin Hartman",
+        "approved_at": "2026-10-22T06:13:03.121Z"
+      }
+    },
+    "S3-contract-drop-tracking-code": {
+      "status": "ready",
+      "gate": {
+        "status": "approved",
+        "history": [
+          {
+            "action": "approved",
+            "at": "2026-10-22T06:13:03.340Z",
+            "approver": "Kevin Hartman"
+          }
+        ],
+        "approver": "Kevin Hartman",
+        "approved_at": "2026-10-22T06:13:03.340Z"
+      }
+    }
+  },
+  "build_queue": [
+    "S1-expand-split-columns",
+    "S2-show-batch-serial",
+    "S3-contract-drop-tracking-code"
+  ],
+  "build_active": null
+}

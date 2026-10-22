@@ -1,0 +1,13 @@
+{
+  "id": "AC3-every-row-survives-unchanged",
+  "status": "draft",
+  "given": "the full set of sprint-1 stock records before the change",
+  "when": "the expand migration is applied",
+  "then": "the same number of stock records exists afterwards and each record's sku, location, and quantity are identical to before; location is never rewritten from the tracking_code's leading segment",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "Whole-table preservation of the canonical fields (count, sku, location, quantity) is independent of how the new columns are filled; a backfill can populate batch/serial correctly yet lose rows or overwrite location from the code."
+  },
+  "layer": "Infra",
+  "architectural_notes": "Infra: the R1 row-preservation guarantee for an ADDITIVE migration on the pre-existing stock_records table — the backfill only SETs batch_number/serial_number, never location/sku/quantity, and never INSERTs/DELETEs, so count and canonical fields are identical; UNIQUE(sku,location) and CHECK(quantity>=0) remain in force (NFR2/NFR3). Owner: the expand migration; verified on the paired branch by snapshotting (sku,location,quantity) before upgrade and comparing after, plus a downgrade/upgrade round-trip that keeps every row (PI2)."
+}

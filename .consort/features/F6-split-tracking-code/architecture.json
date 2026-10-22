@@ -1,0 +1,236 @@
+{
+  "feature_id": "F6-split-tracking-code",
+  "service_backed": true,
+  "layers": [
+    {
+      "name": "routes",
+      "role": "boundary",
+      "module": "app/routes/",
+      "may_import": [
+        "service"
+      ],
+      "renders_via": "react"
+    },
+    {
+      "name": "services",
+      "role": "service",
+      "module": "app/services/",
+      "may_import": [
+        "repository",
+        "models"
+      ]
+    },
+    {
+      "name": "repositories",
+      "role": "repository",
+      "module": "app/repositories/",
+      "may_import": [
+        "models",
+        "infrastructure"
+      ]
+    },
+    {
+      "name": "models",
+      "role": "models",
+      "module": "app/models/",
+      "may_import": [
+        "infrastructure"
+      ]
+    },
+    {
+      "name": "database",
+      "role": "infrastructure",
+      "module": "app/database.py",
+      "may_import": []
+    }
+  ],
+  "api_contracts": [
+    {
+      "id": "EP1-list-stock-batch-serial",
+      "method": "GET",
+      "path": "/api/stock",
+      "query": [
+        "location"
+      ],
+      "shape": "list",
+      "item": "StockRecordOut {sku: string, location: string, quantity: int, batch_number: string|null, serial_number: string|null}; null batch/serial = not tracked; tracking_code is removed from the response by S3-contract-drop-tracking-code (column dropped)",
+      "story": "S2-show-batch-serial"
+    },
+    {
+      "id": "EP2-sku-detail-batch-serial",
+      "method": "GET",
+      "path": "/api/skus/{sku}",
+      "shape": "object",
+      "item": "SkuDetailOut {sku: string, locations: [{location: string, quantity: int, batch_number: string|null, serial_number: string|null}]}; null batch/serial = not tracked; tracking_code is removed from the response by S3-contract-drop-tracking-code (column dropped)",
+      "story": "S2-show-batch-serial"
+    }
+  ],
+  "persistence_invariants": [
+    {
+      "id": "PI1-batch-serial-nullable",
+      "type": "check",
+      "table": "stock_records",
+      "brief": "batch_number and serial_number are added as NULLABLE columns (no NOT NULL, no default): a nonconforming or absent tracking_code yields NULL in both, never a guessed or partial value."
+    },
+    {
+      "id": "PI2-expand-migration-reversible-rows-survive",
+      "type": "migration_reversible",
+      "table": "stock_records",
+      "brief": "The additive expand migration on pre-existing stock_records: downgrade to its down_revision removes only batch_number/serial_number and every prior row survives with sku, location, quantity and tracking_code unchanged; upgrade head re-adds and re-backfills them."
+    },
+    {
+      "id": "PI3-backfill-transactional",
+      "type": "transactional",
+      "table": "stock_records",
+      "brief": "Column add + backfill run in one migration transaction: a failure leaves stock_records at the prior revision with no partially backfilled rows."
+    },
+    {
+      "id": "PI4-canonical-constraints-retained",
+      "type": "unique",
+      "table": "stock_records",
+      "brief": "After the expand migration UNIQUE (sku, location) and CHECK (quantity >= 0) are still present and enforced; the backfill never rewrites location from the code's leading segment."
+    },
+    {
+      "id": "PI5-contract-migration-reversible-rows-survive",
+      "type": "migration_reversible",
+      "table": "stock_records",
+      "brief": "The contract migration (drop tracking_code) on pre-existing stock_records: downgrade to its down_revision re-adds nullable tracking_code rebuilt as location-batch-serial where batch and serial are both non-NULL (else NULL) and every row survives; upgrade head drops it again."
+    },
+    {
+      "id": "PI6-contract-drop-transactional",
+      "type": "transactional",
+      "table": "stock_records",
+      "brief": "The tracking_code drop runs in one migration transaction: a failure leaves stock_records at the expand revision with tracking_code intact and all rows present."
+    },
+    {
+      "id": "PI7-canonical-constraints-retained-after-contract",
+      "type": "unique",
+      "table": "stock_records",
+      "brief": "After the contract migration UNIQUE (sku, location) and CHECK (quantity >= 0) are still present and enforced, and batch_number/serial_number stay nullable."
+    }
+  ],
+  "access_patterns": [],
+  "nfrs": [
+    {
+      "id": "NFR1-stock-data-survives-migrations",
+      "brief_ref": "R1",
+      "tier": "product",
+      "applies_to": "S1-expand-split-columns",
+      "hil_status": "accepted",
+      "requirement": "The expand migration preserves every sprint-1 stock record (count, sku, location, quantity, tracking_code) and is reversible without row loss. The adjustment timestamp/actor clause is N/A to F6 (no adjustments introduced).",
+      "fitness_functions": [
+        {
+          "clause": "After upgrade, stock_records row count and every row's (sku, location, quantity, tracking_code) equal the pre-upgrade snapshot.",
+          "realized_by": [
+            "AC3-every-row-survives-unchanged"
+          ]
+        },
+        {
+          "clause": "Downgrade to the expand migration's down_revision then upgrade head keeps every row and re-derives the same batch_number/serial_number.",
+          "realized_by": [
+            "AC3-every-row-survives-unchanged"
+          ]
+        }
+      ],
+      "fitness_function": "On the paired branch, the expand migration's upgrade and its downgrade/upgrade round-trip both leave stock_records' row count and every row's (sku, location, quantity, tracking_code) equal to the pre-upgrade snapshot."
+    },
+    {
+      "id": "NFR2-no-negative-stock",
+      "brief_ref": "R2",
+      "tier": "product",
+      "applies_to": "S1-expand-split-columns",
+      "hil_status": "accepted",
+      "requirement": "F6 introduces no write path for quantity; the obligation is that the migration leaves CHECK (quantity >= 0) intact. Pick-overcommit is N/A (no pick operation in F6).",
+      "fitness_function": "After the expand migration, inserting a stock_records row with quantity -1 on the paired branch is rejected by CHECK (quantity >= 0)."
+    },
+    {
+      "id": "NFR3-sku-location-unique-addressable",
+      "brief_ref": "R3",
+      "tier": "product",
+      "applies_to": "S1-expand-split-columns",
+      "hil_status": "accepted",
+      "requirement": "The expand migration keeps (sku, location) uniquely addressable; location remains canonical and is never rewritten from the code.",
+      "fitness_function": "After the expand migration, inserting a second row for an existing (sku, location) on the paired branch is rejected by the UNIQUE constraint."
+    },
+    {
+      "id": "NFR4-real-branch-integration-tests",
+      "brief_ref": "R4",
+      "tier": "platform",
+      "applies_to": "F6-split-tracking-code",
+      "hil_status": "accepted",
+      "requirement": "Migration, backfill and probe tests run against the paired Lakebase branch (DATABASE_URL, databricks_postgres), never a mock/SQLite/in-memory substitute.",
+      "fitness_function": "The integration test session fixture asserts the engine dialect is postgresql and its URL is the paired branch DATABASE_URL, failing fast otherwise."
+    },
+    {
+      "id": "NFR5-spa-json-boundary",
+      "brief_ref": "R5",
+      "tier": "platform",
+      "applies_to": "F6-split-tracking-code",
+      "hil_status": "accepted",
+      "requirement": "Batch/Serial display (S2) stays in the React SPA under client/; the boundary returns JSON only. S1 adds no UI or route.",
+      "fitness_function": "Every /api/* route responds application/json (never text/html)."
+    },
+    {
+      "id": "NFR6-probe-warns-not-blocks",
+      "tier": "product",
+      "applies_to": "S1-expand-split-columns",
+      "hil_status": "accepted",
+      "requirement": "The integrity probe surfaces the exact nonconforming count as a warning for PO review; it never fails the migration.",
+      "fitness_function": "With N seeded nonconforming codes, the probe returns level 'warning' and nonconforming_count N, and the migration still completes."
+    },
+    {
+      "id": "NFR7-not-tracked-never-blank",
+      "tier": "product",
+      "applies_to": "S2-show-batch-serial",
+      "hil_status": "accepted",
+      "requirement": "The API exposes batch_number/serial_number as nullable fields (never a fabricated value); the SPA renders a NULL field as 'not tracked' per field, never blank, without parsing tracking_code client-side.",
+      "fitness_function": "On the paired branch, a stock record with NULL batch_number and populated serial_number is returned by GET /api/stock and GET /api/skus/{sku} with batch_number null and serial_number set (no client-side split of tracking_code)."
+    },
+    {
+      "id": "NFR8-stock-data-survives-contract",
+      "brief_ref": "R1",
+      "tier": "product",
+      "applies_to": "S3-contract-drop-tracking-code",
+      "hil_status": "accepted",
+      "requirement": "The contract migration preserves every stock record (count, sku, location, quantity, batch_number, serial_number) and is reversible without row loss.",
+      "fitness_functions": [
+        {
+          "clause": "After the contract upgrade, stock_records row count and every row's (sku, location, quantity, batch_number, serial_number) equal the expand-revision snapshot.",
+          "realized_by": [
+            "AC2-rows-survive-contract"
+          ]
+        },
+        {
+          "clause": "Downgrade to the contract migration's down_revision restores tracking_code as location-batch-serial with every row present, and upgrade head drops it again.",
+          "realized_by": [
+            "AC3-round-trip-reversible"
+          ]
+        }
+      ],
+      "fitness_function": "On the paired branch, the contract migration's upgrade and its downgrade/upgrade round-trip both leave stock_records' row count and every row's (sku, location, quantity, batch_number, serial_number) equal to the expand-revision snapshot."
+    }
+  ],
+  "open_decisions": [
+    {
+      "id": "OD1-probe-blocks-or-warns",
+      "question": "Does the integrity probe block acceptance or only warn?",
+      "decision_status": "resolved",
+      "resolved_by_story": "S1-expand-split-columns",
+      "resolution": "Warn with the exact count; PO accepts at review (per feature request)."
+    },
+    {
+      "id": "OD2-nonconforming-definition",
+      "question": "Are >3-segment codes and NULL codes nonconforming (NULL batch/serial, counted by the probe)?",
+      "decision_status": "resolved",
+      "resolved_by_story": "S1-expand-split-columns",
+      "resolution": "Yes per feature-spec Data semantics: only exactly three non-empty '-' segments conform; 'A-B-C-D', empty segments and NULL codes are nonconforming and counted."
+    },
+    {
+      "id": "OD3-probe-after-contract",
+      "question": "Once S3 drops tracking_code, is the probe retired or re-pointed (it reads tracking_code)?",
+      "decision_status": "resolved",
+      "resolved_by_story": "S3-contract-drop-tracking-code",
+      "resolution": "Retired: the probe is a pre-acceptance check for the expand step (S1 AC4, gated before S3); the contract change deletes app/services|repositories/tracking_code_integrity.py and drops tracking_code from EP1/EP2 so nothing reads the column. S1 AC4 still holds at the expand revision."
+    }
+  ]
+}

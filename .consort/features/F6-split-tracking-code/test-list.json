@@ -1,0 +1,442 @@
+{
+  "feature_id": "F6-split-tracking-code",
+  "ordered_for": "design-momentum",
+  "items": [
+    {
+      "id": "T1",
+      "description": "After upgrade, a record seeded with tracking_code 'A12-B7-S001' has batch_number 'B7' and serial_number 'S001'",
+      "ac_id": "AC1-conforming-code-backfilled",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T2",
+      "description": "After upgrade, a record seeded with tracking_code 'L1-BATCH22-9' of a different width has batch_number 'BATCH22' and serial_number '9'",
+      "ac_id": "AC1-conforming-code-backfilled",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T3",
+      "description": "After upgrade, a conforming record's tracking_code is still present and identical to its seeded value",
+      "ac_id": "AC1-conforming-code-backfilled",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T4",
+      "description": "After downgrade to down_revision then upgrade head, the seeded rows' batch_number and serial_number are re-backfilled to the values derived before the downgrade",
+      "ac_id": "AC1-conforming-code-backfilled",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI2-expand-migration-reversible-rows-survive",
+      "schema_change_id": "SC1-add-batch-serial-columns"
+    },
+    {
+      "id": "T5",
+      "description": "When the backfill step fails mid-migration, stock_records stays at the prior revision with no batch_number/serial_number columns and no partially backfilled rows (add + backfill in one transaction)",
+      "ac_id": "AC1-conforming-code-backfilled",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI3-backfill-transactional"
+    },
+    {
+      "id": "T6",
+      "description": "The integration test session fixture asserts the engine dialect is postgresql and its URL equals the paired-branch DATABASE_URL from the environment, failing fast otherwise",
+      "ac_id": "AC1-conforming-code-backfilled",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR4-real-branch-integration-tests"
+    },
+    {
+      "id": "T7",
+      "description": "After upgrade, records with tracking_code 'X-1' or bare 'c' have NULL batch_number and NULL serial_number",
+      "ac_id": "AC2-nonconforming-code-left-null",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T8",
+      "description": "After upgrade, records with four-segment 'A-B-C-D' or empty-segment 'A--C' codes have NULL batch_number and NULL serial_number",
+      "ac_id": "AC2-nonconforming-code-left-null",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T9",
+      "description": "After upgrade, a record with a NULL tracking_code remains present with NULL batch_number and NULL serial_number",
+      "ac_id": "AC2-nonconforming-code-left-null",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T10",
+      "description": "After upgrade, a nonconforming record's tracking_code is still present and identical to its seeded value",
+      "ac_id": "AC2-nonconforming-code-left-null",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T11",
+      "description": "On the real branch DB, a direct INSERT into stock_records with batch_number NULL succeeds and information_schema shows batch_number is_nullable YES with no column default",
+      "ac_id": "AC2-nonconforming-code-left-null",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI1-batch-serial-nullable"
+    },
+    {
+      "id": "T12",
+      "description": "After upgrade over a mix of conforming and nonconforming records seeded with per-run-unique SKUs, the count of the test's own seeded stock_records rows (filtered by those SKUs) equals the number seeded (delta, not whole-table total)",
+      "ac_id": "AC3-every-row-survives-unchanged",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T13",
+      "description": "After upgrade, every record's sku, location and quantity equal the pre-upgrade snapshot",
+      "ac_id": "AC3-every-row-survives-unchanged",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T14",
+      "description": "After upgrade, a record whose tracking_code leading segment differs from its location keeps its original location",
+      "ac_id": "AC3-every-row-survives-unchanged",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T15",
+      "description": "After downgrade then upgrade, every row survives with unchanged sku, location, quantity and tracking_code",
+      "ac_id": "AC3-every-row-survives-unchanged",
+      "status": "pending",
+      "kind": "behavior",
+      "schema_change_id": "SC1-add-batch-serial-columns"
+    },
+    {
+      "id": "T16",
+      "description": "After the expand migration, inserting a second stock_records row for an existing (sku, location) is rejected by the UNIQUE constraint on the real branch DB",
+      "ac_id": "AC3-every-row-survives-unchanged",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI4-canonical-constraints-retained",
+      "nfr_id": "NFR3-sku-location-unique-addressable"
+    },
+    {
+      "id": "T27",
+      "description": "After the expand migration, inserting a stock_records row with quantity -1 (per-run-unique sku) on the paired branch is rejected by CHECK (quantity >= 0)",
+      "ac_id": "AC3-every-row-survives-unchanged",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR2-no-negative-stock"
+    },
+    {
+      "id": "T17",
+      "description": "After upgrade, the count of the test's own seeded stock_records rows and each row's (sku, location, quantity, tracking_code) equal the pre-upgrade snapshot",
+      "ac_id": "AC3-every-row-survives-unchanged",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR1-stock-data-survives-migrations"
+    },
+    {
+      "id": "T18",
+      "description": "After downgrade to the expand migration's down_revision then upgrade head, every seeded row is kept and the same batch_number/serial_number are re-derived",
+      "ac_id": "AC3-every-row-survives-unchanged",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR1-stock-data-survives-migrations",
+      "schema_change_id": "SC1-add-batch-serial-columns"
+    },
+    {
+      "id": "T19",
+      "description": "The integrity probe over N seeded nonconforming codes reports level 'warning' with nonconforming_count exactly N",
+      "ac_id": "AC4-integrity-probe-reports-nonconforming",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T20",
+      "description": "The integrity probe counts NULL tracking_code records as nonconforming",
+      "ac_id": "AC4-integrity-probe-reports-nonconforming",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T21",
+      "description": "The integrity probe does not count conforming three-segment records as nonconforming",
+      "ac_id": "AC4-integrity-probe-reports-nonconforming",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T22",
+      "description": "The integrity probe run as python -m app.services.tracking_code_integrity against the branch DATABASE_URL emits the warning with the exact count",
+      "ac_id": "AC4-integrity-probe-reports-nonconforming",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T23",
+      "description": "With N seeded nonconforming codes (delta over the test's own rows), the probe returns level 'warning'",
+      "ac_id": "AC4-integrity-probe-reports-nonconforming",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR6-probe-warns-not-blocks"
+    },
+    {
+      "id": "T24",
+      "description": "With N seeded nonconforming codes (delta over the test's own rows), the probe returns nonconforming_count equal to N",
+      "ac_id": "AC4-integrity-probe-reports-nonconforming",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR6-probe-warns-not-blocks"
+    },
+    {
+      "id": "T25",
+      "description": "The expand migration still completes when nonconforming tracking codes are present (the probe never fails the migration)",
+      "ac_id": "AC4-integrity-probe-reports-nonconforming",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR6-probe-warns-not-blocks"
+    },
+    {
+      "id": "T26",
+      "description": "The integrity probe entrypoint reads its database URL from the DATABASE_URL environment variable rather than a hard-coded value",
+      "ac_id": "AC4-integrity-probe-reports-nonconforming",
+      "status": "pending",
+      "kind": "fitness"
+    },
+    {
+      "id": "T28",
+      "description": "Every /api/* route, including GET /api/stock and GET /api/skus/{sku}, responds with content type application/json and never text/html",
+      "ac_id": "AC1-home-table-batch-serial-columns",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR5-spa-json-boundary"
+    },
+    {
+      "id": "T29",
+      "description": "The stock-by-location table component rendered against the real GET /api/stock shows separate stock-col-batch and stock-col-serial headers and per-row stock-batch-<sku>-<loc> / stock-serial-<sku>-<loc> cells holding the record's batch and serial, with no combined tracking-code column",
+      "ac_id": "AC1-home-table-batch-serial-columns",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/StockTable.test.tsx"
+    },
+    {
+      "id": "T30",
+      "description": "Playwright e2e at route / (through the real App, live DB): the stock-table shows separate stock-col-batch and stock-col-serial headers and no combined tracking-code column; scenario_file client/tests/e2e/home-batch-serial.spec.ts",
+      "ac_id": "AC1-home-table-batch-serial-columns",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/home-batch-serial.spec.ts"
+    },
+    {
+      "id": "T31",
+      "description": "Playwright e2e at route / (live DB, per-run crypto.randomUUID sku filed with batch B7 and serial S001): row cells stock-batch-<sku>-<loc> and stock-serial-<sku>-<loc> show 'B7' and 'S001'; scenario_file client/tests/e2e/home-batch-serial.spec.ts",
+      "ac_id": "AC1-home-table-batch-serial-columns",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/home-batch-serial.spec.ts"
+    },
+    {
+      "id": "T32",
+      "description": "On the paired branch, GET /api/stock returns a record with NULL batch_number and populated serial_number as batch_number null and serial_number set, with no client-side split of tracking_code",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR7-not-tracked-never-blank"
+    },
+    {
+      "id": "T33",
+      "description": "The stock-by-location table component rendered against a real nonconforming-code row (per-run-unique randomUUID sku) shows a not-tracked cell (stock-batch-not-tracked-<sku>-<loc> / stock-serial-not-tracked-<sku>-<loc>, class not-tracked) reading 'not tracked' for each empty field, never blank",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/StockTable.test.tsx"
+    },
+    {
+      "id": "T34",
+      "description": "The stock-table component rendered against a real row with NULL batch and populated serial shows 'not tracked' in the batch cell while the serial cell still shows its value (NFR7 client render)",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/StockTable.test.tsx"
+    },
+    {
+      "id": "T35",
+      "description": "Playwright e2e at route / (live DB, per-run unique sku with nonconforming code 'X-1'): stock-batch-not-tracked-<sku>-<loc> and stock-serial-not-tracked-<sku>-<loc> read 'not tracked', never blank; scenario_file client/tests/e2e/home-not-tracked.spec.ts",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/home-not-tracked.spec.ts"
+    },
+    {
+      "id": "T36",
+      "description": "Playwright e2e at route / (live DB, per-run unique sku with only one populated field): the populated sibling cell still shows its value while the empty field's cell reads 'not tracked'; scenario_file client/tests/e2e/home-not-tracked.spec.ts",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/home-not-tracked.spec.ts"
+    },
+    {
+      "id": "T37",
+      "description": "The SKU detail component rendered against the real GET /api/skus/{sku} shows, inside each sku-location-<loc> position, separately labelled sku-batch-<loc> and sku-serial-<loc> fields with that record's values",
+      "ac_id": "AC3-detail-shows-batch-serial",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/SkuDetail.test.tsx"
+    },
+    {
+      "id": "T38",
+      "description": "Playwright e2e journey / -> click stock-row-<sku>-<loc> -> /sku/:sku (live DB, per-run unique sku): sku-batch-<loc> and sku-serial-<loc> show the record's batch and serial as labelled Batch/Serial fields; scenario_file client/tests/e2e/sku-detail-batch-serial.spec.ts",
+      "ac_id": "AC3-detail-shows-batch-serial",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/sku-detail-batch-serial.spec.ts"
+    },
+    {
+      "id": "T39",
+      "description": "Playwright e2e at /sku/:sku (live DB, per-run unique sku): the combined sku-tracking-<loc> cell is absent from sku-location-<loc>; scenario_file client/tests/e2e/sku-detail-batch-serial.spec.ts",
+      "ac_id": "AC3-detail-shows-batch-serial",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/sku-detail-batch-serial.spec.ts"
+    },
+    {
+      "id": "T40",
+      "description": "On the paired branch, GET /api/skus/{sku} returns a location with NULL batch_number and populated serial_number as batch_number null and serial_number set, with no client-side split of tracking_code",
+      "ac_id": "AC4-detail-not-tracked",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR7-not-tracked-never-blank"
+    },
+    {
+      "id": "T41",
+      "description": "The SKU detail component rendered against a real position with empty batch/serial shows sku-batch-not-tracked-<loc> and sku-serial-not-tracked-<loc> (class not-tracked) reading 'not tracked', never blank",
+      "ac_id": "AC4-detail-not-tracked",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/SkuDetail.test.tsx"
+    },
+    {
+      "id": "T42",
+      "description": "Playwright e2e at /sku/:sku (live DB, per-run unique sku with nonconforming code 'X-1'): sku-batch-not-tracked-<loc> and sku-serial-not-tracked-<loc> read 'not tracked', never blank; scenario_file client/tests/e2e/sku-detail-not-tracked.spec.ts",
+      "ac_id": "AC4-detail-not-tracked",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/sku-detail-not-tracked.spec.ts"
+    },
+    {
+      "id": "T43",
+      "description": "After the contract migration is applied on the paired branch, information_schema shows the stock_records table has no tracking_code column",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T44",
+      "description": "The parent-aware schema diff against the paired branch lists tracking_code as removed and batch_number and serial_number as added",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T45",
+      "description": "GET /api/stock after the contract migration returns items without a tracking_code key and with batch_number and serial_number",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T46",
+      "description": "GET /api/skus/{sku} after the contract migration returns location entries without a tracking_code key and with batch_number and serial_number",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T47",
+      "description": "The integration test session fixture asserts the engine dialect is postgresql and its URL is the paired branch DATABASE_URL, failing fast otherwise",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR4-real-branch-integration-tests"
+    },
+    {
+      "id": "T48",
+      "description": "After the contract upgrade, the count of the test's own seeded stock_records rows (filtered by its per-run unique SKUs) equals the count seeded at the expand revision (a delta on own rows, never a whole-table total)",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T49",
+      "description": "After the contract upgrade GET /api/stock returns every seeded record with identical sku, location, quantity, batch_number and serial_number, including records with NULL batch and serial",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T50",
+      "description": "After the contract upgrade, the test's own seeded stock_records rows, including NULL batch/serial rows, all exist with sku, location, quantity, batch_number and serial_number equal to the expand-revision snapshot",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR8-stock-data-survives-contract"
+    },
+    {
+      "id": "T51",
+      "description": "A forced failure inside the contract migration transaction leaves stock_records at the expand revision with tracking_code still present",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI6-contract-drop-transactional"
+    },
+    {
+      "id": "T52",
+      "description": "After the contract migration, a direct INSERT duplicating an existing (sku, location) is rejected by the UNIQUE constraint",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI7-canonical-constraints-retained-after-contract"
+    },
+    {
+      "id": "T53",
+      "description": "Reversing the contract migration restores tracking_code as location-batch-serial (e.g. 'A12-B7-S001') for rows with both batch and serial set",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T54",
+      "description": "Reversing the contract migration leaves tracking_code NULL for rows where batch_number or serial_number is NULL",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T55",
+      "description": "Reversing the contract migration keeps every one of the test's own seeded stock records (filtered by its per-run unique SKUs) present, own-row count unchanged (a delta, never a whole-table total)",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T56",
+      "description": "Re-applying the contract migration after the reverse drops tracking_code again so the branch ends on head without the column",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T57",
+      "description": "On the real paired branch, downgrading the contract migration to its own down_revision (the S1 expand revision id) then upgrade head recreates the schema: tracking_code is present nullable after the downgrade and absent after upgrade head (mark @pytest.mark.migration)",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI5-contract-migration-reversible-rows-survive",
+      "schema_change_id": "SC2-drop-tracking-code",
+      "nfr_id": "NFR8-stock-data-survives-contract"
+    }
+  ]
+}

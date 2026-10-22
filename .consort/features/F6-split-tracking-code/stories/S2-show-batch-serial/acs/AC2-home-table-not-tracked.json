@@ -1,0 +1,21 @@
+{
+  "id": "AC2-home-table-not-tracked",
+  "status": "draft",
+  "given": "a stock record whose batch and/or serial has no value (e.g. its original code was nonconforming, such as 'X-1')",
+  "when": "the operator opens the home stock-by-location table",
+  "then": "each empty field's cell reads 'not tracked' in its own column (Batch, Serial), never blank, while any populated field in the same row still shows its value",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "The empty-value path is separately breakable: the table can render known batch/serial values correctly yet show blank cells (or a combined fallback) for NULL fields."
+  },
+  "layer": "E2E",
+  "architectural_notes": "E2E: the server returns NULL batch_number/serial_number for a nonconforming code (S1 backfill); the React stock table maps each null field independently to a muted 'not tracked' cell, never blank, while the populated sibling still renders. Null-to-label presentation is owned by the client component; the boundary only passes nulls through (NFR7). Verified by Playwright on the paired branch with a seeded 'X-1' row.",
+  "ui_seams": [
+    "stock-table",
+    "stock-batch-<sku>-<loc>",
+    "stock-serial-<sku>-<loc>",
+    "stock-batch-not-tracked-<sku>-<loc>",
+    "stock-serial-not-tracked-<sku>-<loc>"
+  ],
+  "api_contract_id": "EP1-list-stock-batch-serial"
+}

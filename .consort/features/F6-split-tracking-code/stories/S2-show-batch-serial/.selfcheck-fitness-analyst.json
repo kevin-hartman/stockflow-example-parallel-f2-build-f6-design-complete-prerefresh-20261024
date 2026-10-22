@@ -1,0 +1,5 @@
+[
+  {"id":"fit-1","description":"On the paired branch, GET /api/stock returns a record with NULL batch_number and populated serial_number as batch_number null and serial_number set, with no client-side split of tracking_code","ac_id":"AC2-home-table-not-tracked","status":"pending","kind":"fitness","nfr_id":"NFR7-not-tracked-never-blank"},
+  {"id":"fit-2","description":"On the paired branch, GET /api/skus/{sku} returns a location with NULL batch_number and populated serial_number as batch_number null and serial_number set, with no client-side split of tracking_code","ac_id":"AC4-detail-not-tracked","status":"pending","kind":"fitness","nfr_id":"NFR7-not-tracked-never-blank"},
+  {"id":"fit-3","description":"Every /api/* route, including GET /api/stock and GET /api/skus/{sku}, responds with content type application/json and never text/html","ac_id":"AC1-home-table-batch-serial-columns","status":"pending","kind":"fitness","nfr_id":"NFR5-spa-json-boundary"}
+]

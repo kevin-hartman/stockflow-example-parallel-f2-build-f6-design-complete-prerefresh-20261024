@@ -1,0 +1,21 @@
+{
+  "id": "AC3-detail-shows-batch-serial",
+  "status": "draft",
+  "given": "a SKU with stock records whose batch and serial are known",
+  "when": "the operator opens that SKU's detail view",
+  "then": "each stock position on the detail view shows its Batch and Serial as distinct, separately labelled fields with that record's values, in place of the combined tracking code",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "The SKU detail view is a different page from the home table; the home table can show Batch/Serial while the detail view still shows the combined tracking code."
+  },
+  "layer": "E2E",
+  "architectural_notes": "E2E: client↔server contract — the React SKU detail page renders each position's batch_number/serial_number from GET /api/skus/{sku} as separately labelled Batch and Serial fields replacing sku-tracking-<loc>. app/routes/skus.py SkuLocationOut gains the nullable fields sourced via StockService.sku_locations -> app/repositories/stock.py. Verified by Playwright against the live API on the paired branch.",
+  "ui_seams": [
+    "sku-detail",
+    "sku-locations",
+    "sku-location-<loc>",
+    "sku-batch-<loc>",
+    "sku-serial-<loc>"
+  ],
+  "api_contract_id": "EP2-sku-detail-batch-serial"
+}

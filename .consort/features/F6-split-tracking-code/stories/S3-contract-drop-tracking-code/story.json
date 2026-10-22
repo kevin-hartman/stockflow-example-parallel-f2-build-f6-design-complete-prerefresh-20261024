@@ -1,0 +1,10 @@
+{
+  "id": "S3-contract-drop-tracking-code",
+  "asA": "product owner",
+  "iWantTo": "drop the tracking_code column with a reversible migration proven by round-trip",
+  "soThat": "the refactor is complete and the schema diff shows tracking_code removed",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "S1 and S2 leave tracking_code in place; S3 adds the physical drop and the reversible round-trip, which neither earlier story delivers."
+  }
+}

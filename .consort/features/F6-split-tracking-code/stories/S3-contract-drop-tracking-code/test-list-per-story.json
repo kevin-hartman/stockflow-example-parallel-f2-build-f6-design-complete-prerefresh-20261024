@@ -1,0 +1,119 @@
+{
+  "feature_id": "F6-split-tracking-code",
+  "story_id": "S3-contract-drop-tracking-code",
+  "ordered_for": "design-momentum",
+  "items": [
+    {
+      "id": "T43",
+      "description": "After the contract migration is applied on the paired branch, information_schema shows the stock_records table has no tracking_code column",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T44",
+      "description": "The parent-aware schema diff against the paired branch lists tracking_code as removed and batch_number and serial_number as added",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T45",
+      "description": "GET /api/stock after the contract migration returns items without a tracking_code key and with batch_number and serial_number",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T46",
+      "description": "GET /api/skus/{sku} after the contract migration returns location entries without a tracking_code key and with batch_number and serial_number",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T47",
+      "description": "The integration test session fixture asserts the engine dialect is postgresql and its URL is the paired branch DATABASE_URL, failing fast otherwise",
+      "ac_id": "AC1-tracking-code-dropped",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR4-real-branch-integration-tests"
+    },
+    {
+      "id": "T48",
+      "description": "After the contract upgrade, the count of the test's own seeded stock_records rows (filtered by its per-run unique SKUs) equals the count seeded at the expand revision (a delta on own rows, never a whole-table total)",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T49",
+      "description": "After the contract upgrade GET /api/stock returns every seeded record with identical sku, location, quantity, batch_number and serial_number, including records with NULL batch and serial",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T50",
+      "description": "After the contract upgrade, the test's own seeded stock_records rows, including NULL batch/serial rows, all exist with sku, location, quantity, batch_number and serial_number equal to the expand-revision snapshot",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR8-stock-data-survives-contract"
+    },
+    {
+      "id": "T51",
+      "description": "A forced failure inside the contract migration transaction leaves stock_records at the expand revision with tracking_code still present",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI6-contract-drop-transactional"
+    },
+    {
+      "id": "T52",
+      "description": "After the contract migration, a direct INSERT duplicating an existing (sku, location) is rejected by the UNIQUE constraint",
+      "ac_id": "AC2-rows-survive-contract",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI7-canonical-constraints-retained-after-contract"
+    },
+    {
+      "id": "T53",
+      "description": "Reversing the contract migration restores tracking_code as location-batch-serial (e.g. 'A12-B7-S001') for rows with both batch and serial set",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T54",
+      "description": "Reversing the contract migration leaves tracking_code NULL for rows where batch_number or serial_number is NULL",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T55",
+      "description": "Reversing the contract migration keeps every one of the test's own seeded stock records (filtered by its per-run unique SKUs) present, own-row count unchanged (a delta, never a whole-table total)",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T56",
+      "description": "Re-applying the contract migration after the reverse drops tracking_code again so the branch ends on head without the column",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "behavior"
+    },
+    {
+      "id": "T57",
+      "description": "On the real paired branch, downgrading the contract migration to its own down_revision (the S1 expand revision id) then upgrade head recreates the schema: tracking_code is present nullable after the downgrade and absent after upgrade head (mark @pytest.mark.migration)",
+      "ac_id": "AC3-round-trip-reversible",
+      "status": "pending",
+      "kind": "fitness",
+      "invariant_id": "PI5-contract-migration-reversible-rows-survive",
+      "schema_change_id": "SC2-drop-tracking-code",
+      "nfr_id": "NFR8-stock-data-survives-contract"
+    }
+  ]
+}

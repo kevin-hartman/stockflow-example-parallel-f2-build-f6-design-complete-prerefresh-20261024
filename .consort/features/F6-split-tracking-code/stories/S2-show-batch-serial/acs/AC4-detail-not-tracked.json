@@ -1,0 +1,19 @@
+{
+  "id": "AC4-detail-not-tracked",
+  "status": "draft",
+  "given": "a SKU with a stock record whose batch and/or serial has no value",
+  "when": "the operator opens that SKU's detail view",
+  "then": "each empty field reads 'not tracked' for that field (Batch, Serial) on the detail view, never blank",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "The detail view's empty-value rendering is separately breakable from its populated rendering (AC3) and from the home table's not-tracked state (AC2)."
+  },
+  "layer": "E2E",
+  "architectural_notes": "E2E: GET /api/skus/{sku} passes NULL batch_number/serial_number through unchanged; the React detail page renders each null field as 'not tracked' for that field alone, never blank. Presentation owned by the client component, data by the existing service/repository path (NFR7). Verified by Playwright on the paired branch with a seeded nonconforming row.",
+  "ui_seams": [
+    "sku-location-<loc>",
+    "sku-batch-not-tracked-<loc>",
+    "sku-serial-not-tracked-<loc>"
+  ],
+  "api_contract_id": "EP2-sku-detail-batch-serial"
+}

@@ -1,0 +1,11 @@
+{
+  "id": "S2-show-batch-serial",
+  "asA": "warehouse operator",
+  "iWantTo": "see Batch and Serial on the SKU detail view and as columns in the home stock-by-location table",
+  "soThat": "each stock position has an unambiguous identity, with 'not tracked' for empty values",
+  "requires_e2e": true,
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "S1 only changes schema/data; S2 adds the user-visible Batch/Serial rendering with per-column not-tracked states, which remains unbuilt after S1."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "AC2-rows-survive-contract",
+  "status": "draft",
+  "given": "the full set of stock records after the expand step, including records with NULL batch/serial from nonconforming codes",
+  "when": "the contract migration is applied",
+  "then": "the same number of stock records exists and each record's sku, location, quantity, batch_number, and serial_number are identical to before the drop",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "Row and value preservation is separately breakable from the column drop: tracking_code can be removed while rows are lost or batch/serial values are altered or reset."
+  },
+  "layer": "Infra",
+  "architectural_notes": "Infra: the R1 row-preservation guarantee for the contract migration — a pure DROP COLUMN in one migration transaction (PI6) that never INSERTs/DELETEs/UPDATEs, so row count and every (sku, location, quantity, batch_number, serial_number) incl. NULL batch/serial rows are unchanged, with UNIQUE(sku,location) and CHECK(quantity>=0) retained (PI7). Owner: the contract migration; verified on the paired branch by snapshotting those fields at the expand revision, upgrading, and comparing — no mock DB."
+}

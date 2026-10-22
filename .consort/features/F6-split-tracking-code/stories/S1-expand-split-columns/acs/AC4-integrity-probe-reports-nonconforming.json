@@ -1,0 +1,13 @@
+{
+  "id": "AC4-integrity-probe-reports-nonconforming",
+  "status": "draft",
+  "given": "the expand migration has been applied to data containing a known number of nonconforming tracking codes",
+  "when": "the integrity probe is run against the paired branch",
+  "then": "it reports a warning with the exact count of stock records whose tracking_code did not parse as location-batch-serial, so the PO can review it before accepting the change",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "The probe is a separate reporting outcome; the data can be migrated correctly while the probe is missing or miscounts."
+  },
+  "layer": "Infra",
+  "architectural_notes": "Infra: a data-integrity probe over stock_records — app/services/tracking_code_integrity.py (service) builds a warning report {level:'warning', nonconforming_count:n} from a COUNT query in app/repositories/tracking_code_integrity.py (the only layer touching the session); runnable as python -m app.services.tracking_code_integrity against the branch DATABASE_URL. It warns and never blocks (OD1 resolved); nonconforming follows the feature-spec definition incl. NULL codes (OD2 resolved); verified by a pytest-bdd test seeding a known nonconforming count on the paired branch."
+}

@@ -1,0 +1,118 @@
+{
+  "feature_id": "F6-split-tracking-code",
+  "tables": [
+    {
+      "name": "stock_records",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint generated always as identity",
+          "nullable": false,
+          "description": "Surrogate key"
+        },
+        {
+          "name": "sku",
+          "type": "text",
+          "nullable": false,
+          "description": "PI2"
+        },
+        {
+          "name": "location",
+          "type": "text",
+          "nullable": false,
+          "description": "PI3"
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "nullable": false,
+          "description": "PI4, PI5"
+        },
+        {
+          "name": "batch_number",
+          "type": "text",
+          "nullable": true,
+          "description": "PI1/PI7: nullable, no default"
+        },
+        {
+          "name": "serial_number",
+          "type": "text",
+          "nullable": true,
+          "description": "PI1/PI7: nullable, no default"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_constraints": [
+        [
+          "sku",
+          "location"
+        ]
+      ],
+      "checks": [
+        {
+          "name": "ck_stock_records_quantity_non_negative",
+          "expression": "quantity >= 0"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "ix_stock_records_location",
+          "columns": [
+            "location"
+          ],
+          "unique": false
+        },
+        {
+          "name": "ix_stock_records_location_sku_held",
+          "columns": [
+            "location",
+            "sku"
+          ],
+          "unique": false
+        }
+      ]
+    }
+  ],
+  "schema_changes": [
+    {
+      "id": "SC1-add-batch-serial-columns",
+      "story_id": "S1-expand-split-columns",
+      "kind": "add_column",
+      "table": "stock_records",
+      "detail": "ADD COLUMN batch_number text NULL, ADD COLUMN serial_number text NULL (no default); then in the SAME transaction UPDATE rows whose tracking_code conforms to the canonical pattern to set batch_number/serial_number from its segments; nonconforming/NULL codes left NULL. Never touch sku, location, quantity, tracking_code.",
+      "migration_note": "Expand step (PI1-PI4). Single transaction (transactional DDL). downgrade drops only batch_number, serial_number; UNIQUE(sku,location) and CHECK(quantity>=0) untouched."
+    },
+    {
+      "id": "SC2-drop-tracking-code",
+      "story_id": "S3-contract-drop-tracking-code",
+      "kind": "drop",
+      "table": "stock_records",
+      "detail": "Contract step: in ONE transaction, DROP INDEX ix_stock_records_location_sku_held (its INCLUDE lists tracking_code), recreate it ON (location, sku) INCLUDE (quantity, batch_number, serial_number) WHERE quantity > 0, then DROP COLUMN tracking_code. sku/location/quantity/batch_number/serial_number untouched; UNIQUE(sku,location) and CHECK(quantity>=0) retained.",
+      "migration_note": "downgrade (one transaction): ADD COLUMN tracking_code text NULL; UPDATE SET tracking_code = location||'-'||batch_number||'-'||serial_number WHERE batch_number IS NOT NULL AND serial_number IS NOT NULL; restore index INCLUDE (quantity, tracking_code). PI5, PI6, PI7."
+    }
+  ],
+  "realizes_invariants": [
+    "PI1-batch-serial-nullable",
+    "PI2-expand-migration-reversible-rows-survive",
+    "PI3-backfill-transactional",
+    "PI4-canonical-constraints-retained",
+    "PI5-contract-migration-reversible-rows-survive",
+    "PI6-contract-drop-transactional",
+    "PI7-canonical-constraints-retained-after-contract"
+  ],
+  "addresses_access_patterns": []
+}

@@ -1,0 +1,13 @@
+{
+  "id": "AC2-nonconforming-code-left-null",
+  "status": "draft",
+  "given": "existing stock records whose tracking_code does not parse as location-batch-serial (e.g. 'X-1', a bare 'c') or that have no tracking_code",
+  "when": "the expand migration is applied",
+  "then": "those records keep their batch_number and serial_number NULL (no guessed or partial value) and remain present with their tracking_code unchanged",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "The non-parse path is separately breakable: a backfill can split conforming codes correctly while guessing values (e.g. batch '1' from 'X-1') or dropping unparsable rows."
+  },
+  "layer": "Infra",
+  "architectural_notes": "Infra: the same expand migration's non-parse branch — its backfill UPDATE is guarded by the three-non-empty-segment predicate, so fewer/more segments, an empty segment, or a NULL code leave batch_number/serial_number NULL (no partial split) and the row plus its tracking_code are untouched (PI1 nullable columns, no not_null). Owner: the migration in alembic/versions/; verified on the paired branch by seeding 'X-1', 'c', 'A-B-C-D', 'A--C' and NULL codes before upgrade."
+}

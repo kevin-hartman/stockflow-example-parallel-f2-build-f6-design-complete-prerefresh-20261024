@@ -1,0 +1,9 @@
+{
+  "id": "AC1-tracking-code-dropped",
+  "status": "draft",
+  "given": "the expand step has been applied (batch_number and serial_number exist and are backfilled) and nothing reads tracking_code",
+  "when": "the contract migration is applied and the parent-aware schema diff is run against the paired branch",
+  "then": "the stock table no longer has a tracking_code column, and the diff shows tracking_code removed alongside batch_number and serial_number added",
+  "layer": "Infra",
+  "architectural_notes": "Infra: a data-store contract realized by the CONTRACT Alembic migration (alembic/versions/, down_revision = the S1 expand revision) that drops stock_records.tracking_code and removes the column from app/models/stock_record.py; precondition is zero readers — the S1 integrity probe is retired and tracking_code leaves the EP1/EP2 response items in the same change (OD3 resolved). Verified by a pytest-bdd test on the paired branch that inspects information_schema after upgrade and runs the parent-aware branch schema diff, asserting tracking_code removed and batch_number/serial_number added versus the parent."
+}

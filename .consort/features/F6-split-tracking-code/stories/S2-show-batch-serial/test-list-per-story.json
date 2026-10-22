@@ -1,0 +1,127 @@
+{
+  "feature_id": "F6-split-tracking-code",
+  "story_id": "S2-show-batch-serial",
+  "ordered_for": "design-momentum",
+  "items": [
+    {
+      "id": "T28",
+      "description": "Every /api/* route, including GET /api/stock and GET /api/skus/{sku}, responds with content type application/json and never text/html",
+      "ac_id": "AC1-home-table-batch-serial-columns",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR5-spa-json-boundary"
+    },
+    {
+      "id": "T29",
+      "description": "The stock-by-location table component rendered against the real GET /api/stock shows separate stock-col-batch and stock-col-serial headers and per-row stock-batch-<sku>-<loc> / stock-serial-<sku>-<loc> cells holding the record's batch and serial, with no combined tracking-code column",
+      "ac_id": "AC1-home-table-batch-serial-columns",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/StockTable.test.tsx"
+    },
+    {
+      "id": "T30",
+      "description": "Playwright e2e at route / (through the real App, live DB): the stock-table shows separate stock-col-batch and stock-col-serial headers and no combined tracking-code column; scenario_file client/tests/e2e/home-batch-serial.spec.ts",
+      "ac_id": "AC1-home-table-batch-serial-columns",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/home-batch-serial.spec.ts"
+    },
+    {
+      "id": "T31",
+      "description": "Playwright e2e at route / (live DB, per-run crypto.randomUUID sku filed with batch B7 and serial S001): row cells stock-batch-<sku>-<loc> and stock-serial-<sku>-<loc> show 'B7' and 'S001'; scenario_file client/tests/e2e/home-batch-serial.spec.ts",
+      "ac_id": "AC1-home-table-batch-serial-columns",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/home-batch-serial.spec.ts"
+    },
+    {
+      "id": "T32",
+      "description": "On the paired branch, GET /api/stock returns a record with NULL batch_number and populated serial_number as batch_number null and serial_number set, with no client-side split of tracking_code",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR7-not-tracked-never-blank"
+    },
+    {
+      "id": "T33",
+      "description": "The stock-by-location table component rendered against a real nonconforming-code row (per-run-unique randomUUID sku) shows a not-tracked cell (stock-batch-not-tracked-<sku>-<loc> / stock-serial-not-tracked-<sku>-<loc>, class not-tracked) reading 'not tracked' for each empty field, never blank",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/StockTable.test.tsx"
+    },
+    {
+      "id": "T34",
+      "description": "The stock-table component rendered against a real row with NULL batch and populated serial shows 'not tracked' in the batch cell while the serial cell still shows its value (NFR7 client render)",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/StockTable.test.tsx"
+    },
+    {
+      "id": "T35",
+      "description": "Playwright e2e at route / (live DB, per-run unique sku with nonconforming code 'X-1'): stock-batch-not-tracked-<sku>-<loc> and stock-serial-not-tracked-<sku>-<loc> read 'not tracked', never blank; scenario_file client/tests/e2e/home-not-tracked.spec.ts",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/home-not-tracked.spec.ts"
+    },
+    {
+      "id": "T36",
+      "description": "Playwright e2e at route / (live DB, per-run unique sku with only one populated field): the populated sibling cell still shows its value while the empty field's cell reads 'not tracked'; scenario_file client/tests/e2e/home-not-tracked.spec.ts",
+      "ac_id": "AC2-home-table-not-tracked",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/home-not-tracked.spec.ts"
+    },
+    {
+      "id": "T37",
+      "description": "The SKU detail component rendered against the real GET /api/skus/{sku} shows, inside each sku-location-<loc> position, separately labelled sku-batch-<loc> and sku-serial-<loc> fields with that record's values",
+      "ac_id": "AC3-detail-shows-batch-serial",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/SkuDetail.test.tsx"
+    },
+    {
+      "id": "T38",
+      "description": "Playwright e2e journey / -> click stock-row-<sku>-<loc> -> /sku/:sku (live DB, per-run unique sku): sku-batch-<loc> and sku-serial-<loc> show the record's batch and serial as labelled Batch/Serial fields; scenario_file client/tests/e2e/sku-detail-batch-serial.spec.ts",
+      "ac_id": "AC3-detail-shows-batch-serial",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/sku-detail-batch-serial.spec.ts"
+    },
+    {
+      "id": "T39",
+      "description": "Playwright e2e at /sku/:sku (live DB, per-run unique sku): the combined sku-tracking-<loc> cell is absent from sku-location-<loc>; scenario_file client/tests/e2e/sku-detail-batch-serial.spec.ts",
+      "ac_id": "AC3-detail-shows-batch-serial",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/sku-detail-batch-serial.spec.ts"
+    },
+    {
+      "id": "T40",
+      "description": "On the paired branch, GET /api/skus/{sku} returns a location with NULL batch_number and populated serial_number as batch_number null and serial_number set, with no client-side split of tracking_code",
+      "ac_id": "AC4-detail-not-tracked",
+      "status": "pending",
+      "kind": "fitness",
+      "nfr_id": "NFR7-not-tracked-never-blank"
+    },
+    {
+      "id": "T41",
+      "description": "The SKU detail component rendered against a real position with empty batch/serial shows sku-batch-not-tracked-<loc> and sku-serial-not-tracked-<loc> (class not-tracked) reading 'not tracked', never blank",
+      "ac_id": "AC4-detail-not-tracked",
+      "status": "pending",
+      "kind": "component",
+      "scenario_file": "client/tests/components/SkuDetail.test.tsx"
+    },
+    {
+      "id": "T42",
+      "description": "Playwright e2e at /sku/:sku (live DB, per-run unique sku with nonconforming code 'X-1'): sku-batch-not-tracked-<loc> and sku-serial-not-tracked-<loc> read 'not tracked', never blank; scenario_file client/tests/e2e/sku-detail-not-tracked.spec.ts",
+      "ac_id": "AC4-detail-not-tracked",
+      "status": "pending",
+      "kind": "client",
+      "scenario_file": "client/tests/e2e/sku-detail-not-tracked.spec.ts"
+    }
+  ]
+}

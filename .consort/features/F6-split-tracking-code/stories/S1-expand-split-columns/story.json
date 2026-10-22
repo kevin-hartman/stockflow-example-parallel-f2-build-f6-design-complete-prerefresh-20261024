@@ -1,0 +1,6 @@
+{
+  "id": "S1-expand-split-columns",
+  "asA": "product owner",
+  "iWantTo": "add batch_number and serial_number, backfilled from tracking_code with an integrity probe, while tracking_code still exists",
+  "soThat": "every sprint-1 row survives and nonconforming codes are surfaced"
+}

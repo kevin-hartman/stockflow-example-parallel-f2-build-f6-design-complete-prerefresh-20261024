@@ -1,0 +1,12 @@
+[
+{"id":"bhv-1","description":"After the contract migration is applied on the paired branch, information_schema shows the stock_records table has no tracking_code column","ac_id":"AC1-tracking-code-dropped","status":"pending","kind":"behavior"},
+{"id":"bhv-2","description":"The parent-aware schema diff against the paired branch lists tracking_code as removed and batch_number and serial_number as added","ac_id":"AC1-tracking-code-dropped","status":"pending","kind":"behavior"},
+{"id":"bhv-3","description":"GET /api/stock after the contract migration returns items without a tracking_code key and with batch_number and serial_number","ac_id":"AC1-tracking-code-dropped","status":"pending","kind":"behavior"},
+{"id":"bhv-4","description":"GET /api/skus/{sku} after the contract migration returns location entries without a tracking_code key and with batch_number and serial_number","ac_id":"AC1-tracking-code-dropped","status":"pending","kind":"behavior"},
+{"id":"bhv-5","description":"After the contract upgrade the stock_records row count equals the count at the expand revision","ac_id":"AC2-rows-survive-contract","status":"pending","kind":"behavior"},
+{"id":"bhv-6","description":"After the contract upgrade GET /api/stock returns every seeded record with identical sku, location, quantity, batch_number and serial_number, including records with NULL batch and serial","ac_id":"AC2-rows-survive-contract","status":"pending","kind":"behavior"},
+{"id":"bhv-7","description":"Reversing the contract migration restores tracking_code as location-batch-serial (e.g. 'A12-B7-S001') for rows with both batch and serial set","ac_id":"AC3-round-trip-reversible","status":"pending","kind":"behavior"},
+{"id":"bhv-8","description":"Reversing the contract migration leaves tracking_code NULL for rows where batch_number or serial_number is NULL","ac_id":"AC3-round-trip-reversible","status":"pending","kind":"behavior"},
+{"id":"bhv-9","description":"Reversing the contract migration keeps every stock record present with unchanged row count","ac_id":"AC3-round-trip-reversible","status":"pending","kind":"behavior"},
+{"id":"bhv-10","description":"Re-applying the contract migration after the reverse drops tracking_code again so the branch ends on head without the column","ac_id":"AC3-round-trip-reversible","status":"pending","kind":"behavior"}
+]

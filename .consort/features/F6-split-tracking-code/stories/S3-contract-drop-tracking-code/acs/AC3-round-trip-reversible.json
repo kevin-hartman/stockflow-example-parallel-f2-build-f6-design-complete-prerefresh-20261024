@@ -1,0 +1,13 @@
+{
+  "id": "AC3-round-trip-reversible",
+  "status": "draft",
+  "given": "the contract migration has been applied to records with known location, batch_number, and serial_number",
+  "when": "the contract migration is reversed and then re-applied",
+  "then": "the reverse step restores a tracking_code built as location-batch-serial (e.g. 'A12-B7-S001') with every row present, and re-applying drops tracking_code again so the branch ends on the up-migrated schema without tracking_code",
+  "independence": {
+    "distinct_from_prior": true,
+    "rationale": "Reversibility is a separate outcome: the forward drop and row preservation can both succeed while the down path is missing, fails to reconstruct the code, or leaves the branch on the down schema."
+  },
+  "layer": "Infra",
+  "architectural_notes": "Infra: migration reversibility of the contract step (PI5) — downgrade re-adds nullable tracking_code and rebuilds it in-database as location||'-'||batch_number||'-'||serial_number only where both batch and serial are non-NULL (otherwise NULL; the original nonconforming code is not recoverable), keeping every row; upgrade head drops it again. Owner: the contract migration in alembic/versions/; verified by a pytest-bdd round-trip on the paired branch asserting the rebuilt code (e.g. 'A12-B7-S001'), row count, and the final head schema without tracking_code."
+}

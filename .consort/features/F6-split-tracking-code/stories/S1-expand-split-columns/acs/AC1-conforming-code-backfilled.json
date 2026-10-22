@@ -1,0 +1,9 @@
+{
+  "id": "AC1-conforming-code-backfilled",
+  "status": "draft",
+  "given": "existing stock records whose tracking_code parses as location-batch-serial by the '-' delimiter, at varying widths (e.g. 'A12-B7-S001', 'L1-BATCH22-9')",
+  "when": "the expand migration is applied",
+  "then": "each record's batch_number holds the second segment and serial_number the third segment of its tracking_code (e.g. 'B7' / 'S001'), and tracking_code is still present and unchanged",
+  "layer": "Infra",
+  "architectural_notes": "Infra: a data-store contract realized by an ADDITIVE Alembic expand migration (alembic/versions/) that adds nullable stock_records.batch_number/serial_number (mapped on app/models/stock_record.py) and backfills them in-database via string_to_array(tracking_code,'-') only where exactly three non-empty segments exist (segment 2 -> batch, 3 -> serial), leaving tracking_code untouched. Cross-cutting: migration reversibility + transactional backfill (PI3/PI4) owned by the migration; verified by a pytest-bdd test that seeds the paired branch at the prior revision, upgrades, and reads rows back — no mock DB."
+}
