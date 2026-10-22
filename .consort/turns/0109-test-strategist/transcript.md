@@ -1,0 +1,24 @@
+# test-strategist (test-strategist) – sonnet
+
+## Prompt
+
+```
+Produce story S2-show-batch-serial's test list via the DETERMINISTIC analyst fan-out — do NOT author the items yourself.
+1. Run as its own command (headless, the kit CLI is granted standalone): ./scripts/lk consort-fan-out-analysts --feature F6-split-tracking-code --story S2-show-batch-serial — it spawns the enabled per-kind analysts and DETERMINISTICALLY assembles their slices (coverage, order, feature-flat T-ids, exact + per-invariant dedup), WRITING the ordered per-story list to <PROJECT_ROOT>/.consort/features/F6-split-tracking-code/stories/S2-show-batch-serial/analyst-ordered.json.
+2. REFINE pass (your authoring job — code assembly did only MECHANICAL order + EXACT-duplicate removal). FIRST read the FULL description of EVERY item from <PROJECT_ROOT>/.consort/features/F6-split-tracking-code/stories/S2-show-batch-serial/analyst-ordered.json ON DISK — NEVER judge from the fan-out's console summary, which TRUNCATES (a removal decided on a cut-off description silently drops coverage that no gate catches: the self-check only checks >=1 item per AC, not that distinct behaviors survive). Then: (a) SEMANTIC de-dup — remove an item ONLY when, from BOTH full descriptions, you have CONFIRMED it asserts the IDENTICAL observable behavior as another surviving item (same ac_id, same assertion, same mechanism), or is cross-kind overlap of one. If there is ANY doubt — a different input, edge case, layer, or mechanism — KEEP it: coverage is sacrosanct, a redundant test merely runs, a dropped DISTINCT test is a defect nothing catches. Keep FULL AC coverage and exactly one fitness item per invariant_id. LOG every removal so it is auditable — for EACH deleted item run as its own command: ./scripts/lk consort-log --role test-strategist --event reasoning --feature F6-split-tracking-code --message "[dedup] removed <id> — identical to <surviving id>: <the one behavior they share>". (b) RE-ORDER the survivors for BUILD MOMENTUM — the sequence that builds the story's capability incrementally (schema/migration + core behavior BEFORE the UI that depends on it), interleaving across ACs where that reads better than strict AC order. Edit <PROJECT_ROOT>/.consort/features/F6-split-tracking-code/stories/S2-show-batch-serial/analyst-ordered.json in place; KEEP each surviving item's T<n> id byte-identical (the id is a stable identity, not a position — the build lane reads list order; ids stay unique, need not be monotonic or contiguous).
+3. APPEND every item from <PROJECT_ROOT>/.consort/features/F6-split-tracking-code/stories/S2-show-batch-serial/analyst-ordered.json to the feature master <PROJECT_ROOT>/.consort/features/F6-split-tracking-code/test-list.json, keeping every OTHER story's items; never author a test-list-per-story.json (the orchestration generates the per-story + per-AC views from the master). (Story S2-show-batch-serial's ACs are AC1-home-table-batch-serial-columns, AC2-home-table-not-tracked, AC3-detail-shows-batch-serial, AC4-detail-not-tracked; every appended item's ac_id must be one of these.)
+4. Self-check: ./scripts/lk consort-response-formatter --role test-strategist --feature F6-split-tracking-code --story S2-show-batch-serial — fix + re-run until it passes. Be terse: produce ONLY the required artifact file(s) on disk, then stop with at most a one-line confirmation. Do NOT print a plan, a summary of what you did, rationale, tables, or restate the artifacts to stdout, that output is wasted latency. The files on disk are the deliverable, not your prose.
+```
+
+## Tools used
+
+- Bash {"command":"./scripts/lk consort-fan-out-analysts --feature F6-split-tracking-code --story S2-show-batch-serial 2>&1 | tail -5","description":"Run analyst fan-out","timeout":600000}
+- Read {"file_path":"<PROJECT_ROOT>/.consort/features/F6-split-tracking-code/stories/S2-show-batch-serial/analyst-ordered.json"}
+- Bash {"command":"head -c 600 .consort/features/F6-split-tracking-code/test-list.json; grep -c '\"id\"' .consort/features/F6-split-tracking-code/test-list.json","description":"Inspect master list"}
+- Bash {"command":"cd .consort/features/F6-split-tracking-code && python3 -I -c \"\nimport json\nm=json.load(open('test-list.json'));n=json.load(open('stories/S2-show-batch-serial/analyst-ordered.json'))['items']\nids={i['id'] for i in m['items']}\nm['items']+=[i for i in n if i['id'] not in ids]\njson.dump(m,open('test-list.json','w'),indent=2)\" && cd - >/dev/null && ./scripts/lk consort-response-formatter --role test-strategist --feature F6-split-tracking-code --story S2-show-batch-serial 2>&1 | tail -5","description":"Append items to master and self-check"}
+
+## Final reasoning
+
+S2-show-batch-serial's 15 test items (T28–T42) are now in the feature master `test-list.json`, and the self-check passes.
+
+I removed no items and kept the fan-out's order. I read all 15 full descriptions, and none asserts the same observable behavior as another.

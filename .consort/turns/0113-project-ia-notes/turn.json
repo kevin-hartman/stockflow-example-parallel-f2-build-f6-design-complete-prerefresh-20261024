@@ -1,0 +1,16 @@
+{
+  "ordinal": 113,
+  "step": 0,
+  "label": "project-ia-notes",
+  "kind": "project-ia-notes",
+  "story": "S3-contract-drop-tracking-code",
+  "action": {
+    "kind": "project-ia-notes",
+    "story": "S3-contract-drop-tracking-code"
+  },
+  "produced": [
+    ".consort/features/F6-split-tracking-code/stories/S3-contract-drop-tracking-code/ia-coverage.json"
+  ],
+  "deleted": [],
+  "snapshotted": false
+}

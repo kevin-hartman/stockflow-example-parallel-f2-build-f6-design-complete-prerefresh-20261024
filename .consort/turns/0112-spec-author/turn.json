@@ -1,0 +1,27 @@
+{
+  "ordinal": 112,
+  "step": 0,
+  "label": "spec-author",
+  "kind": "invoke-role",
+  "role": "spec-author",
+  "story": "S3-contract-drop-tracking-code",
+  "action": {
+    "kind": "invoke-role",
+    "role": "spec-author",
+    "story": "S3-contract-drop-tracking-code"
+  },
+  "produced": [
+    ".consort/agent-live.log",
+    ".consort/features/F6-split-tracking-code/stories/S3-contract-drop-tracking-code/acs/AC1-tracking-code-dropped.json",
+    ".consort/features/F6-split-tracking-code/stories/S3-contract-drop-tracking-code/acs/AC2-rows-survive-contract.json",
+    ".consort/features/F6-split-tracking-code/stories/S3-contract-drop-tracking-code/acs/AC3-round-trip-reversible.json"
+  ],
+  "deleted": [],
+  "snapshotted": false,
+  "transcript": {
+    "role": "spec-author",
+    "model": "opus",
+    "toolCount": 5,
+    "finalTextChars": 448
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "ordinal": 114,
+  "step": 0,
+  "label": "architect-reviewer",
+  "kind": "invoke-role",
+  "role": "architect-reviewer",
+  "story": "S3-contract-drop-tracking-code",
+  "action": {
+    "kind": "invoke-role",
+    "role": "architect-reviewer",
+    "story": "S3-contract-drop-tracking-code"
+  },
+  "produced": [
+    ".consort/agent-live.log",
+    ".consort/features/F6-split-tracking-code/architecture.json",
+    ".consort/features/F6-split-tracking-code/architecture.md",
+    ".consort/features/F6-split-tracking-code/stories/S3-contract-drop-tracking-code/acs/AC1-tracking-code-dropped.json",
+    ".consort/features/F6-split-tracking-code/stories/S3-contract-drop-tracking-code/acs/AC2-rows-survive-contract.json",
+    ".consort/features/F6-split-tracking-code/stories/S3-contract-drop-tracking-code/acs/AC3-round-trip-reversible.json"
+  ],
+  "deleted": [],
+  "snapshotted": false,
+  "transcript": {
+    "role": "architect-reviewer",
+    "model": "opus",
+    "toolCount": 5,
+    "finalTextChars": 348
+  }
+}
