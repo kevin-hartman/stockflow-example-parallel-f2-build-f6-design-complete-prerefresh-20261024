@@ -52,11 +52,14 @@ If you need Lakebase, you can try it on [Free Edition](https://login.databricks.
 ```bash
 git clone https://github.com/kevin-hartman/stockflow-example-parallel-f2-build-f6-design-complete.git
 cd stockflow-example-parallel-f2-build-f6-design-complete
+git checkout feature-f6-split-tracking-code
 (cd client && npm install)
 ```
 
-Both feature branches come down with the clone: `feature-f2-stock-adjustment` (F2 built) and
-`feature-f6-split-tracking-code` (F6 designed, ready to build).
+Both feature branches come down with the clone — `feature-f2-stock-adjustment` (F2 built) and
+`feature-f6-split-tracking-code` (F6 designed, ready to build). Checking out `feature-f6` makes it
+the branch `setup.sh` leaves you on to build; `setup.sh` recreates the paired Lakebase branch for
+**both** features regardless of which one you're on.
 
 ### 2. Stand it up as *your* project
 
